@@ -3,10 +3,32 @@
  */
 package at.ac.fhcampuswien
 
+import java.lang.IllegalArgumentException
+
 class App {
     // Game logic for a number guessing game
     fun playNumberGame(digitsToGuess: Int = 4) {
-        //TODO: build a menu which calls the functions and works with the return values
+        println("Let's play the Number Guessing Game!")
+        val genNumber = generateRandomNonRepeatingNumber(digitsToGuess)
+        var attemptsCounter = 0
+
+        while (true) {
+            println("Enter a number!              The generated Number is: $genNumber")
+            val userInput = readlnOrNull()?.toIntOrNull()
+
+            if (userInput != null) {
+                val compareResult = checkUserInputAgainstGeneratedNumber(userInput, genNumber)
+                println(compareResult)
+
+                if (compareResult.n == digitsToGuess) {
+                    println("Congratulations! Your answer is correct. You've had $attemptsCounter attempts. ")
+                    break
+                }
+            } else {
+                println("Invalid input. Please type a valid number from 1 to 9. ")
+            }
+            attemptsCounter++
+        }
     }
 
     /**
@@ -24,8 +46,19 @@ class App {
      * @throws IllegalArgumentException if the length is more than 9 or less than 1.
      */
     val generateRandomNonRepeatingNumber: (Int) -> Int = { length ->
-        //TODO implement the function
-        0   // return value is a placeholder
+        if (length < 1 || length > 9) {
+            throw IllegalArgumentException("Length must be between 1 and 9.")
+        }
+        val digits = mutableListOf<Int>()
+        for (i in 1..9) {
+            digits.add(i)
+        }
+        digits.shuffle()
+        var result = 0
+        for (i in 0 until length) {
+            result = result * 10 + digits[i]
+        }
+        result
     }
 
     /**
@@ -45,12 +78,20 @@ class App {
      * @throws IllegalArgumentException if the inputs do not have the same number of digits.
      */
     val checkUserInputAgainstGeneratedNumber: (Int, Int) -> CompareResult = { input, generatedNumber ->
-        //TODO implement the function
-        CompareResult(0, 0)   // return value is a placeholder
+        val inputDigits = input.toString().toCharArray().map { it.toString().toInt() }
+        val generatedDigits = generatedNumber.toString().toCharArray().map { it.toString().toInt() }
+
+        require(inputDigits.size == generatedDigits.size) { "Input and generated Numbers must have same length. " }
+
+        val matchedDigits = mutableSetOf<Int>()
+        val m = inputDigits.count { it in generatedDigits && matchedDigits.add(it) }
+        val n = inputDigits.withIndex().count { (index, digit) -> digit == generatedDigits[index] && matchedDigits.contains(digit) }
+
+        CompareResult(m,n)   // return value is a placeholder
     }
 }
 
 fun main() {
-    println("Hello World!")
-    // TODO: call the App.playNumberGame function with and without default arguments
+    val app = App()
+    app.playNumberGame()
 }
